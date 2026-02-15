@@ -1,0 +1,683 @@
+<!Doctype html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Tic Tac Toe Versi 2</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+
+            .container {
+                text-align: center;
+                background: white;
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            }
+
+            h1 {
+                color: #667eea;
+                margin-bottom: 20px;
+                font-size: 2.5em;
+            }
+
+            .status {
+                font-size: 1.5em;
+                margin-bottom: 20px;
+                color: #333;
+                min-height: 40px;
+            }
+
+            .board {
+                display: grid;
+                grid-template-columns: repeat(3, 120px);
+                grid-template-rows: repeat(3, 120px);
+                gap: 10px;
+                margin: 0 auto 30px;
+                width: fit-content;
+            }
+
+            .cell {
+                background: #f0f0f0;
+                border: none;
+                border-radius: 10px;
+                font-size: 3em;
+                font-weight: bold;
+                cursor: pointer;
+                transition: a11 0.3s ease;
+                color: #333;
+            }
+
+            .cell:hover {
+                background: #e0e0e0;
+                transform: scale(1.05);
+            }
+
+            .cell:disabled {
+                cursor: not-allowed;
+            }
+
+            .cell.x {
+                color: #667eea;
+            }
+
+            .cell.o {
+                color: #764ba2;
+            }
+
+            .cell.winning {
+                background: #ffd700;
+                animation: pulse 0.5s ease-in-out;
+            }
+
+            @keyframes pulse {
+                0%, 100% { transform: scale(1);}
+                50% { transform: scale(1.1);}
+            }
+
+            .reset-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border: none;
+                padding: 15px 40px;
+                font-size: 1.2em;
+                border-radius: 30px;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+                box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            }
+
+            .reset-btn:hover {
+                transform: translateY(-2x);
+                box-shadow: 0 7px 20px rgba(102, 126, 234, 0.6);
+            }
+
+            .reset-btn:active {
+                transform: translateY(0);
+            }
+
+            .score-board {
+                display: flex;
+                justify-content: center;
+                gap: 40px;
+                margin-bottom: 20px;
+            }
+
+            .score {
+                font-size: 1.2em;
+                color: #333;
+            }
+
+            .score span {
+                font-weight: bold;
+                font-size: 1.5em;
+            }
+
+            .score.x span {
+                color: #667eea;
+            }
+
+            .score.o span {
+                color: #764ba2;
+            }
+
+            .mode-btn {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                color: white;
+                border: none;
+                padding: 12px 30px;
+                font-size: 1em;
+                border-radius: 25px;
+                cursor: pointer;
+                transition: transform 0.3s ease;
+                box-shadow: 0 5px 15px rgba(17, 153, 142, 0.4);
+                margin-bottom: 20px;
+            }
+
+            .mode-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 7px 20px rgba(17, 153, 142, 0.6);
+            }
+
+            .popup-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                z-index: 1000;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .popup-overlay.active {
+                display: flex;
+            }
+
+            .popup {
+                background: white;
+                padding: 40px;
+                border-radius: 20px;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                max-width: 500px;
+                text-align: center;
+            }
+
+            .popup h2 {
+                color: #667eea;
+                margin-bottom: 20px;
+                font-size: 2em;
+            }
+
+            .popup p {
+                color: #666;
+                margin-bottom: 30px;
+                line-height: 1.6;
+            }
+
+            .popup-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            }
+
+            .popup-btn {
+                padding: 15px 30px;
+                font-size: 1.1em;
+                border: none;
+                border-radius: 10px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                font-weight: bold;
+            }
+
+            .popup-btn.human-vs-ai {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+            }
+
+            .popup-btn.ai-vs-ai {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+            }
+
+            .popup-btn.cancel {
+                background: #e0e0e0;
+                color: #333;
+            }
+
+            .popup-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            }
+
+            .move-log {
+                background: #f8f9fa;
+                border-radius: 10px;
+                padding: 15px;
+                margin-top: 20px;
+                max-height: 200px;
+                overflow-y: auto;
+                text-align: left;
+            }
+
+            .move-log h3 {
+                color: #667eea;
+                margin-bottom: 10px;
+                font-size: 1.2em;
+            }
+
+            .move-item {
+                padding: 8px;
+                margin: 5px 0;
+                background: white;
+                border-radius: 5px;
+                font-size: 0.9em;
+                border-left: 3px solid #667eea;
+            }
+
+            .move-item.ai {
+                border-left-color: #764ba2;
+            }
+
+            .current-mode {
+                font-size: 1em;
+                color: #666;
+                margin-bottom: 10px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+        <h1>🎮 Tic Tac Toe</h1>
+        
+        <button class="mode-btn" id="modeBtn">🤖 Pilih Mode Permainan</button>
+        
+        <div class="current-mode" id="currentMode">Mode: Manusia vs Manusia</div>
+        
+        <div class="score-board">
+            <div class="score x">
+                Pemain X: <span id="scoreX">0</span>
+            </div>
+            <div class="score o">
+                Pemain O: <span id="scoreO">0</span>
+            </div>
+        </div>
+
+        <div class="status" id="status">Giliran Pemain X</div>
+        
+        <div class="board" id="board">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+        
+        <button class="reset-btn" id="resetBtn">Main Lagi</button>
+
+        <div class="move-log" id="moveLog" style="display: none;">
+            <h3>📝 Catatan Langkah</h3>
+            <div id="moveList"></div>
+        </div>
+    </div>
+
+    <!-- Popup Mode Selection -->
+    <div class="popup-overlay" id="popupOverlay">
+        <div class="popup">
+            <h2>🎯 Pilih Mode Permainan</h2>
+            <p>Pilih mode permainan yang ingin Anda mainkan</p>
+            <div class="popup-buttons">
+                <button class="popup-btn human-vs-ai" id="humanVsAi">
+                    👤 vs 🤖 Manusia vs Komputer
+                    <br><small>Lawan AI yang cerdas dan strategis</small>
+                </button>
+                <button class="popup-btn ai-vs-ai" id="aiVsAi">
+                    🤖 vs 🤖 Komputer vs Komputer
+                    <br><small>Tonton dua AI bertarung dengan strategi optimal</small>
+                </button>
+                <button class="popup-btn cancel" id="cancelBtn">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Variabel game
+        let currentPlayer = 'X';
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        let gameActive = true;
+        let scoreX = 0;
+        let scoreO = 0;
+        let gameMode = 'human'; // 'human', 'humanVsAi', 'aiVsAi'
+        let moveHistory = [];
+        let aiThinking = false;
+
+        // Pola kemenangan
+        const winPatterns = [
+            [0, 1, 2], // Baris atas
+            [3, 4, 5], // Baris tengah
+            [6, 7, 8], // Baris bawah
+            [0, 3, 6], // Kolom kiri
+            [1, 4, 7], // Kolom tengah
+            [2, 5, 8], // Kolom kanan
+            [0, 4, 8], // Diagonal kiri-kanan
+            [2, 4, 6]  // Diagonal kanan-kiri
+        ];
+
+        // Ambil elemen DOM
+        const cells = document.querySelectorAll('.cell');
+        const statusText = document.getElementById('status');
+        const resetBtn = document.getElementById('resetBtn');
+        const scoreXElement = document.getElementById('scoreX');
+        const scoreOElement = document.getElementById('scoreO');
+        const modeBtn = document.getElementById('modeBtn');
+        const popupOverlay = document.getElementById('popupOverlay');
+        const humanVsAiBtn = document.getElementById('humanVsAi');
+        const aiVsAiBtn = document.getElementById('aiVsAi');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const currentModeText = document.getElementById('currentMode');
+        const moveLog = document.getElementById('moveLog');
+        const moveList = document.getElementById('moveList');
+
+        // Event listeners
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        resetBtn.addEventListener('click', resetGame);
+        modeBtn.addEventListener('click', () => {
+            popupOverlay.classList.add('active');
+        });
+
+        humanVsAiBtn.addEventListener('click', () => {
+            gameMode = 'humanVsAi';
+            currentModeText.textContent = 'Mode: 👤 Manusia (X) vs 🤖 Komputer (O)';
+            popupOverlay.classList.remove('active');
+            moveLog.style.display = 'block';
+            resetGame();
+        });
+
+        aiVsAiBtn.addEventListener('click', () => {
+            gameMode = 'aiVsAi';
+            currentModeText.textContent = 'Mode: 🤖 Komputer (X) vs 🤖 Komputer (O)';
+            popupOverlay.classList.remove('active');
+            moveLog.style.display = 'block';
+            resetGame();
+            // Mulai permainan AI vs AI
+            setTimeout(() => aiVsAiGame(), 1000);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            popupOverlay.classList.remove('active');
+        });
+
+        popupOverlay.addEventListener('click', (e) => {
+            if (e.target === popupOverlay) {
+                popupOverlay.classList.remove('active');
+            }
+        });
+
+        // Fungsi handle klik sel
+        function handleCellClick(e) {
+            if (aiThinking) return;
+            
+            const index = e.target.dataset.index;
+
+            if (gameBoard[index] !== '' || !gameActive) {
+                return;
+            }
+
+            // Jika mode AI vs AI, jangan izinkan klik manual
+            if (gameMode === 'aiVsAi') {
+                return;
+            }
+
+            updateCell(e.target, index);
+            logMove(index, currentPlayer, 'Manual');
+            
+            if (checkResult()) return;
+
+            // Jika mode Human vs AI dan sekarang giliran O (AI)
+            if (gameMode === 'humanVsAi' && currentPlayer === 'O') {
+                aiThinking = true;
+                statusText.textContent = '🤖 Komputer sedang berpikir...';
+                setTimeout(() => {
+                    makeAiMove();
+                    aiThinking = false;
+                }, 800);
+            }
+        }
+
+        // Update sel
+        function updateCell(cell, index) {
+            gameBoard[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+        }
+
+        // Fungsi AI menggunakan algoritma Minimax
+        function minimax(board, depth, isMaximizing, alpha, beta) {
+            const winner = checkWinner(board);
+            
+            // Terminal states
+            if (winner === 'O') return 10 - depth;
+            if (winner === 'X') return depth - 10;
+            if (board.every(cell => cell !== '')) return 0;
+
+            if (isMaximizing) {
+                let maxEval = -Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'O';
+                        let eval = minimax(board, depth + 1, false, alpha, beta);
+                        board[i] = '';
+                        maxEval = Math.max(maxEval, eval);
+                        alpha = Math.max(alpha, eval);
+                        if (beta <= alpha) break;
+                    }
+                }
+                return maxEval;
+            } else {
+                let minEval = Infinity;
+                for (let i = 0; i < 9; i++) {
+                    if (board[i] === '') {
+                        board[i] = 'X';
+                        let eval = minimax(board, depth + 1, true, alpha, beta);
+                        board[i] = '';
+                        minEval = Math.min(minEval, eval);
+                        beta = Math.min(beta, eval);
+                        if (beta <= alpha) break;
+                    }
+                }
+                return minEval;
+            }
+        }
+
+        // Cek pemenang dari board
+        function checkWinner(board) {
+            for (let pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return board[a];
+                }
+            }
+            return null;
+        }
+
+        // AI membuat langkah
+        function makeAiMove() {
+            const player = currentPlayer;
+            let bestScore = player === 'O' ? -Infinity : Infinity;
+            let bestMove = -1;
+            let moveReasoning = '';
+
+            // Analisis setiap langkah yang mungkin
+            const availableMoves = [];
+            for (let i = 0; i < 9; i++) {
+                if (gameBoard[i] === '') {
+                    availableMoves.push(i);
+                }
+            }
+
+            // Cek langkah menang
+            for (let i of availableMoves) {
+                gameBoard[i] = player;
+                if (checkWinner(gameBoard) === player) {
+                    bestMove = i;
+                    moveReasoning = '🎯 Langkah kemenangan terdeteksi!';
+                    gameBoard[i] = '';
+                    break;
+                }
+                gameBoard[i] = '';
+            }
+
+            // Jika tidak ada langkah menang, cek blok lawan
+            if (bestMove === -1) {
+                const opponent = player === 'X' ? 'O' : 'X';
+                for (let i of availableMoves) {
+                    gameBoard[i] = opponent;
+                    if (checkWinner(gameBoard) === opponent) {
+                        bestMove = i;
+                        moveReasoning = '🛡️ Memblokir langkah kemenangan lawan!';
+                        gameBoard[i] = '';
+                        break;
+                    }
+                    gameBoard[i] = '';
+                }
+            }
+
+            // Jika tidak ada langkah kritis, gunakan Minimax
+            if (bestMove === -1) {
+                for (let i of availableMoves) {
+                    gameBoard[i] = player;
+                    let score = minimax([...gameBoard], 0, player === 'X', -Infinity, Infinity);
+                    gameBoard[i] = '';
+
+                    if (player === 'O') {
+                        if (score > bestScore) {
+                            bestScore = score;
+                            bestMove = i;
+                        }
+                    } else {
+                        if (score < bestScore) {
+                            bestScore = score;
+                            bestMove = i;
+                        }
+                    }
+                }
+
+                // Tentukan alasan berdasarkan posisi
+                if (bestMove === 4) {
+                    moveReasoning = '⭐ Mengambil pusat papan - posisi strategis terkuat!';
+                } else if ([0, 2, 6, 8].includes(bestMove)) {
+                    moveReasoning = '📐 Mengambil sudut - membuka banyak peluang kemenangan!';
+                } else {
+                    moveReasoning = '♟️ Langkah taktis - memaksimalkan posisi dan meminimalkan ancaman!';
+                }
+            }
+
+            // Lakukan langkah
+            if (bestMove !== -1) {
+                updateCell(cells[bestMove], bestMove);
+                logMove(bestMove, player, moveReasoning);
+                checkResult();
+            }
+        }
+
+        // AI vs AI game loop
+        async function aiVsAiGame() {
+            if (!gameActive || gameMode !== 'aiVsAi') return;
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
+            
+            if (gameActive) {
+                makeAiMove();
+                if (gameActive) {
+                    aiVsAiGame();
+                }
+            }
+        }
+
+        // Log pergerakan
+        function logMove(position, player, reasoning) {
+            const positionNames = [
+                'Kiri Atas', 'Atas', 'Kanan Atas',
+                'Kiri', 'Tengah', 'Kanan',
+                'Kiri Bawah', 'Bawah', 'Kanan Bawah'
+            ];
+
+            const moveItem = document.createElement('div');
+            moveItem.className = `move-item ${gameMode !== 'human' ? 'ai' : ''}`;
+            
+            const icon = player === 'X' ? '❌' : '⭕';
+            moveItem.innerHTML = `<strong>${icon} Pemain ${player}</strong> → ${positionNames[position]}<br><small>${reasoning}</small>`;
+            
+            moveList.insertBefore(moveItem, moveList.firstChild);
+            moveHistory.push({ player, position, reasoning });
+        }
+
+        // Cek hasil
+        function checkResult() {
+            let roundWon = false;
+            let winningPattern = null;
+
+            for (let i = 0; i < winPatterns.length; i++) {
+                const pattern = winPatterns[i];
+                const a = gameBoard[pattern[0]];
+                const b = gameBoard[pattern[1]];
+                const c = gameBoard[pattern[2]];
+
+                if (a === '' || b === '' || c === '') {
+                    continue;
+                }
+
+                if (a === b && b === c) {
+                    roundWon = true;
+                    winningPattern = pattern;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                statusText.textContent = `🎉 Pemain ${currentPlayer} Menang!`;
+                gameActive = false;
+                highlightWinningCells(winningPattern);
+                updateScore();
+                return true;
+            }
+
+            // Cek seri
+            if (!gameBoard.includes('')) {
+                statusText.textContent = '🤝 Permainan Seri!';
+                gameActive = false;
+                return true;
+            }
+
+            // Ganti pemain
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            statusText.textContent = `Giliran Pemain ${currentPlayer}`;
+            return false;
+            }
+
+            // Highlight sel pemenang
+            function highlightWinningCells(pattern) {
+                pattern.forEach(index => {
+                    cells[index].classList.add('winning');
+                });
+            }
+
+            // Update skor
+            function updateScore() {
+                if (currentPlayer === 'X') {
+                    scoreX++;
+                    scoreXElement.textContent = scoreX;
+                } else {
+                    scoreO++;
+                    scoreOElement.textContent = scoreO;
+                }
+            }
+
+            // Reset game
+            function resetGame() {
+                currentPlayer = 'X';
+                gameBoard = ['', '', '', '', '', '', '', '', ''];
+                gameActive = true;
+                moveHistory = [];
+                moveList.innerHTML = '';
+                statusText.textContent = 'Giliran Pemain X';
+                aiThinking = false;
+
+                cells.forEach(cell => {
+                    cell.textContent = '';
+                    cell.classList.remove('x', 'o', 'winning');
+                });
+
+                // Jika mode AI vs AI, mulai permainan otomatis
+                if (gameMode === 'aiVsAi') {
+                    setTimeout(() => aiVsAiGame(), 1000);
+                }
+            }
+        </script>
+    </body>
+</html>
